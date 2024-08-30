@@ -1,7 +1,13 @@
-from enum import Enum
+from .base import BaseEnum
 
 
-class Action(str, Enum):
-    CREATE = "CREATE"
-    UPDATE = "UPDATE"
-    DELETE = "DELETE"
+class Action(BaseEnum):
+    CREATE = "create"
+    UPDATE = "update"
+    DELETE = "delete"
+
+
+class OrderAction(BaseEnum):
+    FINISH = "finish"
+    CANCEL = "cancel"
+    BAN = "ban"

@@ -3,16 +3,24 @@ from typing import (
     Optional,
     Union,
     overload,
+    Literal,
 )
 from pydantic import PositiveInt
 
 from .base import FiveSimBaseClient
 from .request.aiohttp import AiohttpRequestClient
-from ..enums.actions import Action
+from ..enums.actions import (
+    Action,
+    OrderAction,
+)
+from ..enums.langs import Lang
 
 from ..enums.request.connection import Connection
 from ..enums.request.method import Method
-from ..enums import Category
+from ..enums import (
+    Category,
+    BaseValue,
+)
 from ..models.guest.countries import Country
 from ..models.guest.prices import (
     CountryWithProducts,
@@ -28,6 +36,7 @@ from ..models.user import (
     UserPayments,
     UserPriceLimit,
 )
+from ..models.user.orders import Order
 from ..models.user.price_limits import UserPricePostDTO
 from ..utils.generators import generate_full_link
 from ..utils.validators import validate_api_key
@@ -39,7 +48,7 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
             api_key: Optional[str] = None,
             base_url: Optional[str] = None
     ) -> None:
-        self.__base_url = base_url or Connection.base_url.value
+        self.__base_url = base_url or Connection.base_url
         self._api_key = api_key or None
         self._headers = RequestHeaders(
             Authorization=f"Bearer {api_key}"
@@ -103,7 +112,7 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
     @validate_api_key
     async def action_with_user_price_limits(
             self,
-            action: Action,
+            action: Action | Literal["create", "update", "delete"],
             product_name: str,
             price: Optional[float] = None
     ) -> bool:
@@ -116,13 +125,16 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
             product_name=product_name,
             price=price
         )
-        await self.request(
-            method,
-            url,
-            json=data.model_dump(exclude_none=True),
-            no_return=True
-        )
-        return True
+        try:
+            await self.request(
+                method,
+                url,
+                json=data.model_dump(exclude_none=True),
+                no_return=True
+            )
+            return True
+        except ... as exception:
+            return False
 
     async def get_countries_list(self) -> list[Country]:
         url = generate_full_link(self.__base_url, "guest/countries")
@@ -161,7 +173,7 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
             self,
             country: Optional[str] = None,
             product: Optional[str] = None,
-    ) -> CountryWithProducts | list[OperatorWithPrice] | ProductWithCountries | list[CountryWithProducts]:
+    ) -> Union[CountryWithProducts, list[OperatorWithPrice], ProductWithCountries, list[CountryWithProducts]]:
         url = generate_full_link(
             self.__base_url,
             "guest/prices",
@@ -180,3 +192,104 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
             name, data = response.popitem()
             return ProductWithCountries(**data, name=name)
         return [CountryWithProducts(**data, name=country) for country, data in response.items()]
+
+    @validate_api_key
+    async def buy_number(
+            self,
+            product: str,
+            country: Optional[str] = BaseValue.ANY,
+            operator: Optional[str] = BaseValue.ANY,
+            forwarding_number: Optional[str] = None,
+            reuse: Optional[bool] = None,
+            voice: Optional[bool] = None,
+            ref: Optional[str] = None,
+            max_price: Optional[float] = None,
+    ) -> Order:
+        if max_price and operator != BaseValue.ANY:
+            raise ValueError("You can't use max_price with operator")
+
+        url = generate_full_link(
+            self.__base_url,
+            f"user/buy/activation/{country}/{operator}/{product}",
+            forwarding="true" if forwarding_number else "false",
+            number=forwarding_number,
+            reuse=reuse,
+            voice=voice,
+            ref=ref,
+            maxPrice=max_price
+        )
+        response = await self.request(Method.GET, url)
+        return Order(**response)
+
+    @validate_api_key
+    async def rent_number(
+            self,
+            product: str,
+            country: Optional[str] = BaseValue.ANY,
+            operator: Optional[str] = BaseValue.ANY,
+    ) -> Order:
+        # Not available at 5sim site
+        raise NotImplementedError(f"This method is not available at {self.__base_url.split('/')[2]} site now")
+
+    @validate_api_key
+    async def reuse_number(
+            self,
+            product: str,
+            number: str,
+    ) -> bool:
+        url = generate_full_link(
+            self.__base_url,
+            f"user/reuse/{product}/{number}",
+        )
+        try:
+            await self.request(Method.GET, url)
+            return True
+        except ... as exception:
+            return False
+
+    @validate_api_key
+    async def get_order_info(
+            self,
+            order_id: Union[str, int]
+    ) -> Order:
+        url = generate_full_link(
+            self.__base_url,
+            f"user/check/{order_id}",
+        )
+        response = await self.request(Method.GET, url)
+        return Order(**response)
+
+    @validate_api_key
+    async def action_with_order(
+            self,
+            action: OrderAction | Literal["finish", "cancel", "ban"],
+            order_id: Union[str, int]
+    ) -> Order:
+        url = generate_full_link(
+            self.__base_url,
+            f"user/{action}/{order_id}",
+        )
+        response = await self.request(Method.GET, url)
+        return Order(**response)
+
+    @validate_api_key
+    async def get_rental_info(
+            self,
+            order_id: int,
+    ) -> ...:
+        # Not available at 5sim site
+        raise NotImplementedError(f"This method is not available at {self.__base_url.split('/')[2]} site now")
+
+    async def get_notification(
+            self,
+            lang: Literal["ru", "en"] | Lang
+    ) -> str | None:
+        # IDK what is this method for
+        # This method doesn't require api_key...
+        url = generate_full_link(
+            self.__base_url,
+            f"guest/flash/{lang}"
+        )
+        response = await self.request(Method.GET, url)
+        return response.get("text", None)
+

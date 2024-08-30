@@ -1,6 +1,6 @@
-from enum import Enum
+from .base import BaseEnum
 
 
-class Category(str, Enum):
+class Category(BaseEnum):
     hosting = "hosting"
     activation = "activation"

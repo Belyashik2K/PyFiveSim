@@ -5,11 +5,17 @@ from abc import (
 from typing import (
     Optional,
     Union,
+    Literal,
 )
 from pydantic import PositiveInt
 
-from pyfivesim.enums import Category
-from pyfivesim.enums.actions import Action
+from pyfivesim.enums import (
+    Category,
+    Action,
+    BaseValue,
+)
+from pyfivesim.enums.actions import OrderAction
+from pyfivesim.enums.langs import Lang
 from pyfivesim.models.guest.countries import Country
 from pyfivesim.models.guest.prices import (
     CountryWithProducts,
@@ -22,6 +28,7 @@ from pyfivesim.models.user import (
     UserPayments,
     UserPriceLimit,
 )
+from pyfivesim.models.user.orders import Order
 
 
 class FiveSimBaseClient(ABC):
@@ -58,7 +65,7 @@ class FiveSimBaseClient(ABC):
     @abstractmethod
     def action_with_user_price_limits(
             self,
-            action: Action,
+            action: Action | Literal["create", "update", "delete"],
             product_name: str,
             price: Optional[float] = None
     ) -> bool:
@@ -71,7 +78,88 @@ class FiveSimBaseClient(ABC):
     @abstractmethod
     def get_prices(
             self,
-            country: Optional[str] = None,
-            product: Optional[str] = None,
+            *args,
+            **kwargs
     ) -> CountryWithProducts | list[OperatorWithPrice] | ProductWithCountries | list[CountryWithProducts]:
+        ...
+
+    @abstractmethod
+    def buy_number(
+            self,
+            product: str,
+            country: Optional[str] = BaseValue.ANY,
+            operator: Optional[str] = BaseValue.ANY,
+            forwarding_number: Optional[str] = None,
+            reuse: Optional[bool] = False,
+            voice: Optional[bool] = False,
+            ref: Optional[str] = None,
+            max_price: Optional[float] = None,
+    ) -> Order:
+        ...
+
+    @abstractmethod
+    def rent_number(
+            self,
+            product: str,
+            country: Optional[str] = BaseValue.ANY,
+            operator: Optional[str] = BaseValue.ANY,
+    ) -> Order:
+        ...
+
+    @abstractmethod
+    def reuse_number(
+            self,
+            product: str,
+            number: str,
+    ) -> bool:
+        ...
+
+    @abstractmethod
+    def get_order_info(
+            self,
+            order_id: int,
+    ) -> Order:
+        ...
+
+    @abstractmethod
+    def action_with_order(
+            self,
+            action: OrderAction | Literal["finish", "cancel", "ban"],
+            order_id: Union[str, int],
+    ) -> Order:
+        ...
+
+    @abstractmethod
+    def get_rental_info(
+            self,
+            order_id: int,
+    ) -> ...:
+        ...
+
+    @abstractmethod
+    def get_notification(
+            self,
+            lang: Literal["ru", "en"] | Lang
+    ) -> str | None:
+        ...
+
+    # Vendor methods in development
+    @abstractmethod
+    def get_vendor_profile(self) -> ...:
+        ...
+
+    @abstractmethod
+    def get_vendor_balances(self) -> ...:
+        ...
+
+    @abstractmethod
+    def get_vendor_orders(self) -> ...:
+        ...
+
+    @abstractmethod
+    def get_vendor_payments(self) -> ...:
+        ...
+
+    @abstractmethod
+    def create_vendor_withdraw(self) -> bool:
         ...

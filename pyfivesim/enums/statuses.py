@@ -1,7 +1,7 @@
-from enum import Enum
+from .base import BaseEnum
 
 
-class Status(str, Enum):
+class Status(BaseEnum):
     PENDING = "PENDING"
     RECEIVED = "RECEIVED"
     CANCELED = "CANCELED"

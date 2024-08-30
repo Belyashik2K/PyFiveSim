@@ -1,9 +1,7 @@
-from enum import (
-    Enum,
-)
+from ..base import BaseEnum
 
 
-class Method(str, Enum):
+class Method(BaseEnum):
     GET = "GET"
     POST = "POST"
     DELETE = "DELETE"

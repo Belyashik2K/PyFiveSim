@@ -1,12 +1,12 @@
 def generate_full_link(
         base_url: str,
         endpoint: str,
-        **kwargs
+        **query_params: str | int | None
 ) -> str:
     url = f"{base_url}/{endpoint}"
-    if kwargs:
+    if query_params:
         url += "?"
-        for key, value in kwargs.items():
+        for param, value in query_params.items():
             if value is not None:
-                url += f"{key}={value}&"
+                url += f"{param}={value}&"
     return url.removesuffix("&")

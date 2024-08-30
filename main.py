@@ -4,15 +4,19 @@ from http.client import responses
 
 from pyfivesim import FiveSimAsync
 from pyfivesim.enums import Category
-from pyfivesim.enums.actions import Action
+from pyfivesim.enums.actions import (
+    Action,
+    OrderAction,
+)
 
 
 async def main() -> None:
     client = FiveSimAsync(
-        # api_key="eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTU1NDMyMjksImlhdCI6MTcyNDAwNzIyOSwicmF5IjoiMjBiMTZmNzExNjgxZThhZjcxNjA0YjI2N2E3MzNkOGEiLCJzdWIiOjE0ODA0ODZ9.Wx1ZNFZZ8iExu5vIIe3DZj4kg4htK046-LoRfpkxh_cNhCuPl0-4x4bRGwV_Vllp_YVxFVj6TsoLehMReSk7Ax9re6MR84EU_FB94khaKogahzwbrENqDyVyEi0osKWksMFsAp0S2bRpzjIRUyFo_gciJpWVikARJKPSRuxI9RITC9lXRxTzNUffWPReNh41yu6GELRLAEs80LVTxBHFSPQPP9YdDCXAiP0vIE4A4LJFyPh9yiPWm1SSC6iNcnrjZhhpeRI2tepSwazpxhoR4BmzBcG9w6276h2RBrgreBAmG3AkzZGhEtWL0lrkyGkD8IrBu2orVhaM-5DDi81Vsw"
+        api_key="eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTU1NDMyMjksImlhdCI6MTcyNDAwNzIyOSwicmF5IjoiMjBiMTZmNzExNjgxZThhZjcxNjA0YjI2N2E3MzNkOGEiLCJzdWIiOjE0ODA0ODZ9.Wx1ZNFZZ8iExu5vIIe3DZj4kg4htK046-LoRfpkxh_cNhCuPl0-4x4bRGwV_Vllp_YVxFVj6TsoLehMReSk7Ax9re6MR84EU_FB94khaKogahzwbrENqDyVyEi0osKWksMFsAp0S2bRpzjIRUyFo_gciJpWVikARJKPSRuxI9RITC9lXRxTzNUffWPReNh41yu6GELRLAEs80LVTxBHFSPQPP9YdDCXAiP0vIE4A4LJFyPh9yiPWm1SSC6iNcnrjZhhpeRI2tepSwazpxhoR4BmzBcG9w6276h2RBrgreBAmG3AkzZGhEtWL0lrkyGkD8IrBu2orVhaM-5DDi81Vsw"
     )
-    response = await client.get_user_profile()
-    print(response)
+
+    # response = await client.get_user_profile()
+    # print(response)
     # response = await client.get_user_orders(Category.activation,
     #                                         limit=5,
     #                                         offset=3,
@@ -33,7 +37,7 @@ async def main() -> None:
     #     price=1
     # )
     # response = await client.action_with_user_price_limits(
-    #     action=Action.CREATE,
+    #     action=Action.UPDATE,
     #     product_name="telegram",
     # )
     # print(response)
@@ -69,11 +73,31 @@ async def main() -> None:
     #         break
     # else:
     # pprint.pprint(response)
+    #
+    # data = await client.get_prices(country="afghanistan")
+    # data2 = await client.get_prices(product="telegram")
+    # data3 = await client.get_prices(country="afghanistan", product="telegram")
+    # data4 = await client.get_prices()
+    # res = await client.buy_number(
+    #     product="amazon",
+    #     country="indonesia",
+    #     operator="any",
+    #     max_price=2
+    # )
+    # print(res.id)
+    # res = await client.get_order_info(
+    #     order_id=res.id
+    # )
+    # print(res)
+    # res = await client.action_with_order(
+    #     action=OrderAction.CANCEL,
+    #     order_id=res.id
+    # )
+    # print(res)
+    # res = await client.get_rental_info(
+    #     order_id=1
+    # )
 
-    data = await client.get_prices(country="afghanistan")
-    data2 = await client.get_prices(product="telegram")
-    data3 = await client.get_prices(country="afghanistan", product="telegram")
-    data4 = await client.get_prices()
 
 if __name__ == "__main__":
     asyncio.run(main())

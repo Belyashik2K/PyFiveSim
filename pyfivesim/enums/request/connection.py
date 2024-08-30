@@ -1,5 +1,5 @@
-from enum import Enum
+from ..base import BaseEnum
 
 
-class Connection(str, Enum):
+class Connection(BaseEnum):
     base_url = "https://5sim.biz/v1"
