@@ -10,6 +10,7 @@ from aiohttp import (
 )
 
 from .base import BaseRequestClient
+from ...utils.exception_checker import RequestExceptionChecker
 
 
 class AiohttpRequestClient(BaseRequestClient):
@@ -39,6 +40,9 @@ class AiohttpRequestClient(BaseRequestClient):
     ) -> dict | None:
         async with self.get_session() as session:  # type: ClientSession
             async with session.request(method, url, **kwargs) as response:
+                checker = RequestExceptionChecker(response)
+                await checker.run()
+
                 if no_return:
                     return
                 return await response.json()

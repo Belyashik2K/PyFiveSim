@@ -1,4 +1,3 @@
-import pprint
 from typing import (
     Optional,
     Union,
@@ -13,7 +12,6 @@ from ..enums.actions import (
     Action,
     OrderAction,
 )
-from ..enums.langs import Lang
 
 from ..enums.request.connection import Connection
 from ..enums.request.method import Method
@@ -21,6 +19,11 @@ from ..enums import (
     Category,
     BaseValue,
 )
+from ..enums.vendor_withdraw import (
+    VendorWithdrawMethod,
+    VendorWithdrawFee,
+)
+from ..exceptions import FiveSimDetailedException
 from ..models.guest.countries import Country
 from ..models.guest.prices import (
     CountryWithProducts,
@@ -38,6 +41,11 @@ from ..models.user import (
 )
 from ..models.user.orders import Order
 from ..models.user.price_limits import UserPricePostDTO
+from ..models.vendor.orders import VendorOrders
+from ..models.vendor.payments import VendorPayments
+from ..models.vendor.payoff import VendorWithdraw
+from ..models.vendor.profile import VendorProfile
+from ..models.vendor.wallet import VendorWallets
 from ..utils.generators import generate_full_link
 from ..utils.validators import validate_api_key
 
@@ -66,7 +74,7 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
     @validate_api_key
     async def get_user_orders(
             self,
-            category: Union[str, Category],
+            category: Union[Literal["activation", "hosting"], Category],
             limit: Optional[PositiveInt] = None,
             offset: Optional[PositiveInt] = None,
             order: Optional[str] = None,
@@ -75,7 +83,7 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
         url = generate_full_link(
             self.__base_url,
             "user/orders",
-            category=category.value if isinstance(category, Category) else category,
+            category=category,
             limit=limit,
             offset=offset,
             order=order,
@@ -112,7 +120,7 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
     @validate_api_key
     async def action_with_user_price_limits(
             self,
-            action: Action | Literal["create", "update", "delete"],
+            action: Union[Action, Literal["create", "update", "delete"]],
             product_name: str,
             price: Optional[float] = None
     ) -> bool:
@@ -133,7 +141,7 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
                 no_return=True
             )
             return True
-        except ... as exception:
+        except FiveSimDetailedException:
             return False
 
     async def get_countries_list(self) -> list[Country]:
@@ -173,7 +181,10 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
             self,
             country: Optional[str] = None,
             product: Optional[str] = None,
-    ) -> Union[CountryWithProducts, list[OperatorWithPrice], ProductWithCountries, list[CountryWithProducts]]:
+    ) -> Union[
+        CountryWithProducts, list[OperatorWithPrice],
+        ProductWithCountries, list[CountryWithProducts]
+    ]:
         url = generate_full_link(
             self.__base_url,
             "guest/prices",
@@ -186,7 +197,7 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
             name, data = response.popitem()
             return CountryWithProducts(**data, name=country)
         if country and product:
-            return [OperatorWithPrice(name=name, price=Price(**data)) for name, data in
+            return [OperatorWithPrice(name=name, operator_info=Price(**data)) for name, data in
                     response[country][product].items()]
         if not country and product:
             name, data = response.popitem()
@@ -213,8 +224,8 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
             f"user/buy/activation/{country}/{operator}/{product}",
             forwarding="true" if forwarding_number else "false",
             number=forwarding_number,
-            reuse=reuse,
-            voice=voice,
+            reuse=int(reuse) if reuse else None,
+            voice=int(voice) if voice else None,
             ref=ref,
             maxPrice=max_price
         )
@@ -244,7 +255,7 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
         try:
             await self.request(Method.GET, url)
             return True
-        except ... as exception:
+        except FiveSimDetailedException:
             return False
 
     @validate_api_key
@@ -262,9 +273,14 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
     @validate_api_key
     async def action_with_order(
             self,
-            action: OrderAction | Literal["finish", "cancel", "ban"],
+            action: Union[OrderAction, Literal["finish", "cancel", "ban"]],
             order_id: Union[str, int]
     ) -> Order:
+        if action == OrderAction.FINISH:
+            current_order = await self.get_order_info(order_id)
+            if not current_order.sms:
+                action = OrderAction.CANCEL
+
         url = generate_full_link(
             self.__base_url,
             f"user/{action}/{order_id}",
@@ -280,16 +296,80 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
         # Not available at 5sim site
         raise NotImplementedError(f"This method is not available at {self.__base_url.split('/')[2]} site now")
 
-    async def get_notification(
+    @validate_api_key
+    async def get_vendor_profile(self) -> VendorProfile:
+        url = generate_full_link(self.__base_url, "user/vendor")
+        response = await self.request(Method.GET, url)
+        return VendorProfile(**response)
+
+    @validate_api_key
+    async def get_vendor_wallets(self) -> VendorWallets:
+        url = generate_full_link(self.__base_url, "vendor/wallets")
+        response = await self.request(Method.GET, url)
+        return VendorWallets(**response)
+
+    @validate_api_key
+    async def get_vendor_orders(
             self,
-            lang: Literal["ru", "en"] | Lang
-    ) -> str | None:
-        # IDK what is this method for
-        # This method doesn't require api_key...
+            category: Union[Literal["activation", "hosting"], Category],
+            limit: Optional[PositiveInt] = None,
+            offset: Optional[PositiveInt] = None,
+            order: Optional[str] = None,
+            reverse: Optional[bool] = None
+    ) -> VendorOrders:
         url = generate_full_link(
             self.__base_url,
-            f"guest/flash/{lang}"
+            "vendor/orders",
+            category=category,
+            limit=limit,
+            offset=offset,
+            order=order,
+            reverse="true" if reverse else "false"
         )
         response = await self.request(Method.GET, url)
-        return response.get("text", None)
+        return VendorOrders(**response)
 
+    @validate_api_key
+    async def get_vendor_payments(
+            self,
+            limit: Optional[PositiveInt] = None,
+            offset: Optional[PositiveInt] = None,
+            order: Optional[str] = None,
+            reverse: Optional[bool] = None
+    ) -> VendorPayments:
+        url = generate_full_link(
+            self.__base_url,
+            "vendor/payments",
+            limit=limit,
+            offset=offset,
+            order=order,
+            reverse="true" if reverse else "false"
+        )
+        response = await self.request(Method.GET, url)
+        return VendorPayments(**response)
+
+    @validate_api_key
+    async def create_vendor_withdraw(
+            self,
+            receiver: str,
+            method: Union[Literal["visa", "qiwi", "yandex"], VendorWithdrawMethod],
+            amount: float,
+            fee: Union[Literal["fkwallet", "payeer", "unitpay"], VendorWithdrawFee],
+    ) -> bool:
+        url = generate_full_link(self.__base_url, "vendor/withdraw")
+        data = VendorWithdraw(
+            receiver=receiver,
+            method=method,
+            amount=amount,
+            fee=fee
+        )
+        try:
+            await self.request(
+                Method.POST,
+                url,
+                json=data.model_dump(),
+                no_return=True
+            )
+            return True
+        except FiveSimDetailedException:
+            return False

@@ -13,6 +13,14 @@ def validate_api_key(method):
 
     return wrapper
 
+def validate_api_key_sync(method):
+    def wrapper(self, *args, **kwargs):
+        if not self._api_key:
+            raise ValueError("API key is required for this method")
+        return method(self, *args, **kwargs)
+
+    return wrapper
+
 def validate_operators_in_model(data: dict, field: str) -> dict:
     products = list()
     for service, operators in data.items():
