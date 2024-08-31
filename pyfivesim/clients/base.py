@@ -39,6 +39,9 @@ from ..models.vendor.wallet import VendorWallets
 
 
 class FiveSimBaseClient(ABC):
+    """
+    Base class for all 5sim clients.
+    """
 
     @abstractmethod
     def get_user_profile(self) -> UserProfile:

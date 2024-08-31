@@ -18,15 +18,20 @@ async def main() -> None:
     client = FiveSimSync(
         api_key=api_key
     )
+    async_client = FiveSimAsync(
+        api_key=api_key
+    )
 
     profile = client.get_user_profile()
     print(profile)
+    profile_async = await async_client.get_user_profile()
+    print(profile_async)
 
-    products = client.get_prices(
-        country="afghanistan",
-        product="telegram"
-    )
-    print(products)
+    # products = client.get_prices(
+    #     country="afghanistan",
+    #     product="telegram"
+    # )
+    # print(products)
 
     # orders = client.get_user_orders(
     #     category=Category.activation,

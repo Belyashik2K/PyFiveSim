@@ -56,6 +56,12 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
             api_key: Optional[str] = None,
             base_url: Optional[str] = None
     ) -> None:
+        """
+        Async client for interact with 5sim API.
+
+        :param api_key: Your API key.
+        :param base_url: Base URL for 5sim API.
+        """
         self.__base_url = base_url or Connection.base_url
         self._api_key = api_key or None
         self._headers = RequestHeaders(
