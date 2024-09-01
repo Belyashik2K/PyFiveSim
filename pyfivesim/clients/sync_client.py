@@ -3,12 +3,13 @@ from typing import (
     Union,
     Literal,
     overload,
+    Self,
 )
 
 from pydantic import PositiveInt
 
 from ..clients.base import FiveSimBaseClient
-from..clients.request.httpx import HttpxRequestClient
+from ..clients.request.httpx import HttpxRequestClient
 from ..enums import (
     Category,
     Action,
@@ -70,6 +71,12 @@ class PyFiveSimSync(FiveSimBaseClient, HttpxRequestClient):
         super().__init__(
             headers=self._headers.model_dump(by_alias=True)
         )
+
+    def __enter__(self, *args, **kwargs) -> Self:
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        ...
 
     @validate_api_key_sync
     def get_user_profile(self) -> UserProfile:
@@ -379,4 +386,3 @@ class PyFiveSimSync(FiveSimBaseClient, HttpxRequestClient):
             return True
         except FiveSimDetailedException:
             return False
-
