@@ -66,7 +66,6 @@ async def main():
                 print("Finish the order...")
                 await client.action_with_order(OrderAction.FINISH, order.id)
                 print("Order finished successfully!")
-                break
             else:
                 print(f"No SMS received yet, sleep for {sleep_for} seconds :(")
 
