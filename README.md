@@ -10,7 +10,7 @@
 ## Features
 * Two available clients: sync (HTTPX) and async (AIOHTTP), which can be used as context managers or as instances
 * Methods return Pydantic model as result for easier interaction with data
-* Enums for more prettier code
+* Enums for prettier code
 * Full exception handling
 > Library documentation is already in development...
 
