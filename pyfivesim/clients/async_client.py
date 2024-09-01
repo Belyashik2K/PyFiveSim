@@ -231,6 +231,8 @@ class PyFiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
     ) -> Order:
         if max_price and operator != BaseValue.ANY:
             raise ValueError("You can't use max_price with operator")
+        if max_price and country == BaseValue.ANY:
+            raise ValueError("You can't use max_price without country")
 
         url = generate_full_link(
             self.__base_url,

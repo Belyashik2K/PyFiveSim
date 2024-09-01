@@ -32,6 +32,7 @@ class Order(BaseModel):
     product: str = Field(...)
     sms: Optional[OrderSMS] = Field(...)
     status: Status = Field(...)
+    price: float = Field(...)
 
     # noinspection PyNestedDecorators
     @field_validator("sms", mode="before")

@@ -3,8 +3,8 @@ import asyncio
 from pyfivesim import PyFiveSimAsync
 from pyfivesim.exceptions import (
     FiveSimNotEnoughBalance,
-    FiveSimInternalError,
     FiveSimUnknownError,
+    FiveSimNoFreePhones,
 )
 from pyfivesim.enums import (
     OrderAction,
@@ -13,9 +13,61 @@ from pyfivesim.enums import (
 
 
 async def main():
-    key = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTU1NDMyMjksImlhdCI6MTcyNDAwNzIyOSwicmF5IjoiMjBiMTZmNzExNjgxZThhZjcxNjA0YjI2N2E3MzNkOGEiLCJzdWIiOjE0ODA0ODZ9.Wx1ZNFZZ8iExu5vIIe3DZj4kg4htK046-LoRfpkxh_cNhCuPl0-4x4bRGwV_Vllp_YVxFVj6TsoLehMReSk7Ax9re6MR84EU_FB94khaKogahzwbrENqDyVyEi0osKWksMFsAp0S2bRpzjIRUyFo_gciJpWVikARJKPSRuxI9RITC9lXRxTzNUffWPReNh41yu6GELRLAEs80LVTxBHFSPQPP9YdDCXAiP0vIE4A4LJFyPh9yiPWm1SSC6iNcnrjZhhpeRI2tepSwazpxhoR4BmzBcG9w6276h2RBrgreBAmG3AkzZGhEtWL0lrkyGkD8IrBu2orVhaM-5DDi81Vsw"
-    async with PyFiveSimAsync(api_key=key) as client:
-        await client.get_order_info(order_id="12")
+    api_key = "YOUR_API_KEY"
+
+    # Create a client instance or use async with ...
+    client = PyFiveSimAsync(
+        api_key=api_key,
+        base_url="https://5sim.net/v1"  # Optional, default is "https://5sim.biz/v1",
+    )
+    # or use sync client PyFiveSimSync(api_key=api_key)
+
+    # Get the user profile and print the ID, balance, and rating
+    profile = await client.get_user_profile()
+    print("ID >>>", profile.id)
+    print("Balance >>>", profile.balance)
+    print("Rating >>>", profile.rating)
+    # Get last 5 user orders and print the service and price
+    for order in profile.last_top_orders:
+        print("Service >>>", order.service)
+        print("Operator >>>", order.operator)
+        print("Price >>>", order.price)
+
+    # Try to buy a number
+    try:
+        order = await client.buy_number(
+            product="youdo",
+            country="russia",
+            max_price=5,
+        )
+    except FiveSimNotEnoughBalance:
+        print("O-o-p-s! Not enough balance :(")
+    except FiveSimNoFreePhones:
+        print("O-o-p-s! No free numbers :(")
+    except FiveSimUnknownError as exc:
+        print("Unknown error occurred :(")
+        print("Error status code >>>", exc.status_code)
+        print("Error message >>>", exc.data)
+    else:
+        print("W-o-o-h-o-o! Number bought successfully!")
+        print("Phone number >>>", order.phone)
+        print("Price >>>", order.price)
+
+        print("Start checking for SMS...")
+        sleep_for = 5
+        while not order.status == Status.FINISHED:
+            await asyncio.sleep(sleep_for)
+            order = await client.get_order_info(order.id)
+            if order.sms:
+                print("SMS received! :)")
+                print("SMS text >>>", order.sms.text)
+                print("SMS code >>>", order.sms.code)
+                print("Finish the order...")
+                await client.action_with_order(OrderAction.FINISH, order.id)
+                print("Order finished successfully!")
+                break
+            else:
+                print(f"No SMS received yet, sleep for {sleep_for} seconds :(")
 
 
 if __name__ == "__main__":
