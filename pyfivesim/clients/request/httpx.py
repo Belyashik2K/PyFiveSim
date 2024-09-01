@@ -3,7 +3,7 @@ import certifi
 
 from contextlib import contextmanager
 from typing import Generator
-from httpx import Client, Response
+from httpx import Client
 
 from pyfivesim.clients.request.base import BaseRequestClient
 from pyfivesim.utils.exception_checker import RequestExceptionChecker

@@ -3,6 +3,7 @@ from typing import (
     Union,
     overload,
     Literal,
+    Self,
 )
 from pydantic import PositiveInt
 
@@ -50,7 +51,7 @@ from ..utils.generators import generate_full_link
 from ..utils.validators import validate_api_key
 
 
-class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
+class PyFiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
     def __init__(
             self,
             api_key: Optional[str] = None,
@@ -70,6 +71,12 @@ class FiveSimAsync(FiveSimBaseClient, AiohttpRequestClient):
         super().__init__(
             headers=self._headers.model_dump(by_alias=True)
         )
+
+    async def __aenter__(self, *args, **kwargs) -> Self:
+        return self
+
+    async def __aexit__(self, *args, **kwargs):
+        ...
 
     @validate_api_key
     async def get_user_profile(self) -> UserProfile:

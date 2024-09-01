@@ -118,7 +118,7 @@ class FiveSimBaseClient(ABC):
         https://5sim.net/docs#delete-price-limit
 
         :param action: Action which should be done
-        :param product_name: Product name
+        :param product_name: Product name (https://5sim.biz/docs#products-list)
         :param price: Price limit
         """
         ...
@@ -143,8 +143,8 @@ class FiveSimBaseClient(ABC):
 
         Docs: https://5sim.net/docs#products-request
 
-        :param country: Country name
-        :param operator: Operator name
+        :param country: Country name (https://5sim.biz/docs#get-countries-list)
+        :param operator: Operator name (https://5sim.biz/docs#operators-list)
         """
         ...
 
@@ -168,8 +168,8 @@ class FiveSimBaseClient(ABC):
 
         https://5sim.net/docs#prices-by-country-and-product
 
-        :param country: Country name
-        :param product: Product name
+        :param country: Country name (https://5sim.biz/docs#get-countries-list)
+        :param product: Product name (https://5sim.biz/docs#products-list)
         """
         ...
 
@@ -190,9 +190,9 @@ class FiveSimBaseClient(ABC):
 
         Docs: https://5sim.net/docs#purchase-request
 
-        :param product: Product name
-        :param country: The country, "any" - any country
-        :param operator: The operator, "any" - any operator
+        :param product: Product name (https://5sim.biz/docs#products-list)
+        :param country: The country, "any" - any country (https://5sim.biz/docs#get-countries-list)
+        :param operator: The operator, "any" - any operator (https://5sim.biz/docs#operators-list)
         :param forwarding_number: Number for which the call will be forwarded, only the Russian numbers, 11 digits, without the + sign
         :param reuse: Buy with the ability to reuse the number, if available
         :param voice: Buy with the ability to receive a call from the robot, if available
@@ -214,8 +214,8 @@ class FiveSimBaseClient(ABC):
         Docs: https://5sim.net/docs#buy-hosting-number
 
         :param product: Product name (3hours, 1day)
-        :param country: The country, "any" - any country
-        :param operator: The operator, "any" - any operator
+        :param country: The country, "any" - any country (https://5sim.biz/docs#get-countries-list)
+        :param operator: The operator, "any" - any operator (https://5sim.biz/docs#operators-list)
         """
         ...
 
@@ -230,7 +230,7 @@ class FiveSimBaseClient(ABC):
 
         Docs: https://5sim.net/docs#rebuy-number
 
-        :param product: Product name
+        :param product: Product name (https://5sim.biz/docs#products-list)
         :param number: Number which should be reused
         """
         ...

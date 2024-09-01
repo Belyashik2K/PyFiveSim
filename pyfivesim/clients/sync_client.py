@@ -50,7 +50,7 @@ from ..utils.validators import (
 )
 
 
-class FiveSimSync(FiveSimBaseClient, HttpxRequestClient):
+class PyFiveSimSync(FiveSimBaseClient, HttpxRequestClient):
     def __init__(
             self,
             api_key: Optional[str] = None,
