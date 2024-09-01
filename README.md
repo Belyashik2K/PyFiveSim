@@ -1,4 +1,4 @@
-![Без имени-1](https://github.com/user-attachments/assets/6e088361-a84a-46b6-8389-5b4f96cb0df5)
+![5sim](https://github.com/user-attachments/assets/6e088361-a84a-46b6-8389-5b4f96cb0df5)
 
 # PyFiveSim
 > Sync/async Python wrapper for [5sim](https://5sim.biz/) API

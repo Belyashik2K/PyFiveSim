@@ -1,12 +1,15 @@
-from setuptools import setup
+from setuptools import (
+    setup,
+    find_packages,
+)
 
-version = '1.0.8'
+version = '1.0.0'
 
 with open('README.md', 'r') as f:
     long_description = f.read()
 
 setup(
-    name='VisionCraftAPI',
+    name='PyFiveSim',
     version=version,
 
     author='Belyashik2K',
@@ -17,13 +20,11 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
 
-    description='Fully async python wrapper for VisionCraft API',
-    url='https://github.com/Belyashik2K/VisionCraftAPI',
+    description='Sync/async Python wrapper for 5sim API',
+    url='https://github.com/Belyashik2K/PyFiveSim',
 
-    packages=['VisionCraftAPI',
-              'VisionCraftAPI/exceptions', 'VisionCraftAPI/models',
-              'VisionCraftAPI/utils', 'VisionCraftAPI/enums'],
+    packages=find_packages(),
 
-    install_requires=['certifi', 'aiohttp', 'pydantic'],
+    install_requires=['certifi', 'aiohttp', 'pydantic[email]', 'httpx'],
     zip_safe=False
-    )
+)
