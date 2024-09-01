@@ -1,3 +1,20 @@
+![Без имени-1](https://github.com/user-attachments/assets/6e088361-a84a-46b6-8389-5b4f96cb0df5)
+
+# PyFiveSim
+> Sync/async Python wrapper for [5sim](https://5sim.biz/) API
+
+## Installing
+
+    pip install PyFiveSim
+
+## Features
+* Two available clients: sync (HTTPX) and async (AIOHTTP), which can be used as context managers or as instances
+* Methods return Pydantic model as result for easier interaction with data
+* Enums for more prettier code
+* Full exception handling
+> Library documentation is already in development...
+
+## Usage
 ```python
 import asyncio
 
@@ -74,3 +91,7 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
+
+## Docs
+> Go to https://5sim.biz/ for more information about API methods
+
