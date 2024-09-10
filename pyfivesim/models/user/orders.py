@@ -30,7 +30,7 @@ class Order(BaseModel):
     operator: str = Field(...)
     phone: str = Field(...)
     product: str = Field(...)
-    sms: Optional[OrderSMS] = Field(...)
+    sms: Union[Optional[OrderSMS], list[OrderSMS]] = Field(...)
     status: Status = Field(...)
     price: float = Field(...)
 
@@ -39,7 +39,7 @@ class Order(BaseModel):
     @classmethod
     def validate_sms(cls, value: list) -> Optional[OrderSMS]:
         if value:
-            return OrderSMS(**value[0])
+            return OrderSMS(**value[0]) if isinstance(value[0], dict) else [OrderSMS(**sms) for sms in value]
         return None
 
 
